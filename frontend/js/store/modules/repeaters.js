@@ -1,5 +1,6 @@
-import { FORM } from '../mutations'
 import ACTIONS from '@/store/actions'
+import { FORM } from '../mutations'
+import cloneDeep from 'lodash/cloneDeep'
 
 const state = {
   /**
@@ -105,7 +106,7 @@ const actions = {
         fields.forEach(field => {
           fieldCopies.push({
             name: field.name.replace(block.id, id),
-            value: field.value
+            value: cloneDeep(field.value)
           })
         })
       })
