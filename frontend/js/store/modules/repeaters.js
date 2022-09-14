@@ -109,11 +109,36 @@ const actions = {
             value: cloneDeep(field.value)
           })
         })
+        duplicatedNestedRepeaters(block, duplicates[duplicateId][index])
       })
     })
 
     commit(FORM.ADD_REPEATERS, { repeaters: duplicates })
     commit(FORM.ADD_FORM_FIELDS, fieldCopies)
+
+    // Duplicate the nested repeaters, only support 1 level of nested depth now, consider using recursion
+    function duplicatedNestedRepeaters (block, duplicatedBlock) {
+      const nestedRepeaters = { ...getters.repeatersByBlockId(block.id) }
+      const nestedRepeaterIds = Object.keys(nestedRepeaters)
+      const duplicatesNested = {}
+      nestedRepeaterIds.forEach(repeaterId => (duplicatesNested[repeaterId.replace(block.id, duplicatedBlock.id)] = [...nestedRepeaters[repeaterId]]))
+      Object.keys(duplicatesNested).forEach(duplicateId => {
+        duplicatesNested[duplicateId].forEach((block, index) => {
+          // const id = Date.now()
+          const id = Date.now() + Math.floor(Math.random() * 1000)
+          const fields = [...getters.fieldsByBlockId(block.id)]
+          duplicatesNested[duplicateId][index] = { ...duplicatesNested[duplicateId][index], id }
+          fields.forEach(field => {
+            fieldCopies.push({
+              name: field.name.replace(block.id, id),
+              // the value can be an object if having locale, must perform a deep clone
+              value: cloneDeep(field.value)
+            })
+          })
+        })
+      })
+      commit(FORM.ADD_REPEATERS, { repeaters: duplicatesNested })
+    }
   }
 }
 
